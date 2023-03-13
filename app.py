@@ -2,6 +2,7 @@ from flask import Flask, request
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
+from marshmallow import post_load, fields, ValidationError
 from flask_migrate import Migrate
 from flask_restful import Api, Resource
 from dotenv import load_dotenv
@@ -37,7 +38,16 @@ class Songs(db.Model):
 
 
 # Schemas
+class ProductSchema(ma.Schema):
+    id = fields.Integer(primary_key=True)
+    title = fields.String(required=True)
+    artist = fields.String(required=True)
+    album = fields.String(required=True)
+    release_date = fields.Date(required=True)
+    genre = fields.String(required=True)
 
+    class Meta:
+        fields = ('id', 'title', 'artist', 'album', 'release_date', 'genre')
 
 
 # Resources
