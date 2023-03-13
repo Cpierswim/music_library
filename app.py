@@ -31,10 +31,12 @@ class Songs(db.Model):
     album = db.Column(db.String(150), nullable=False)
     release_date = db.Column(db.Date, nullable=False)
     genre = db.Column(db.String(100), nullable=False)
+    likes = db.Column(db.Integer, nullable=True, default=0)
 
 
     def __repr__(self) -> str:
-       return f'ID: {self.id} Title: {self.title} {self.artist} {self.album} {self.release_date} {self.genre}'
+       return f'ID: {self.id} Title: {self.title} {self.artist} {self.album} {self.release_date} {self.genre} Likes: {self.likes}'
+    
 
 
 # Schemas
@@ -45,9 +47,10 @@ class SongsSchema(ma.Schema):
     album = fields.String(required=True)
     release_date = fields.Date(required=True)
     genre = fields.String(required=True)
+    likes = fields.Integer(required=False)
 
     class Meta:
-        fields = ('id', 'title', 'artist', 'album', 'release_date', 'genre')
+        fields = ('id', 'title', 'artist', 'album', 'release_date', 'genre', 'likes')
 
     @post_load
     def create_song(self, data, **kwargs):
@@ -63,9 +66,8 @@ class SongListResoucre(Resource):
         return songs_schema.dump(all_songs), 200
 
     def post(self):
-        temp = request.get_json()
         try:
-            add_song = song_schema.load(temp)
+            add_song = song_schema.load(request.get_json())
             db.session.add(add_song)
             db.session.commit()
             return song_schema.dump(add_song), 201
@@ -88,6 +90,8 @@ class SongResource(Resource):
             song_from_db.relase_date = request.json['relase_date']
         if 'genre' in request.json:
             song_from_db.genre = request.json['genre']
+        if 'likes' in request.json:
+            song_from_db.likes = request.json['likes']
         db.session.commit()
         return song_schema.dump(song_from_db), 200
 
@@ -96,8 +100,24 @@ class SongResource(Resource):
         db.session.delete(song_from_db)
         db.session.commit()
         return '', 204
+    
+class AddLikeResource(Resource):
+    def put(self, song_id):
+        song_from_db = Songs.query.get_or_404(song_id)
+        song_from_db.likes += 1
+        db.session.commit()
+        return song_schema.dump(song_from_db), 200
+    
+class RemoveLikeResource(Resource):
+    def put(self, song_id):
+        song_from_db = Songs.query.get_or_404(song_id)
+        song_from_db.likes -= 1
+        db.session.commit()
+        return song_schema.dump(song_from_db), 200
 
 
 # Routes
 api.add_resource(SongListResoucre, '/api/songs')
 api.add_resource(SongResource, '/api/songs/<int:song_id>')
+api.add_resource(AddLikeResource, '/api/add_like/<int:song_id>')
+api.add_resource(RemoveLikeResource, '/api/remove_like/<int:song_id>')

@@ -75,6 +75,72 @@
 			"response": []
 		},
 		{
+			"name": "Add Like to Song",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"title\": \"Cigarette Daydreams\",\r\n    \"artist\": \"Cage the Elephant\",\r\n    \"album\": \"Melaphobia\",\r\n    \"release_date\": \"2013-10-8\", \r\n    \"genre\": \"Alternative rock\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:5000/api/add_like/1",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"add_like",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Remove Like From Song",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"title\": \"Cigarette Daydreams\",\r\n    \"artist\": \"Cage the Elephant\",\r\n    \"album\": \"Melaphobia\",\r\n    \"release_date\": \"2013-10-8\", \r\n    \"genre\": \"Alternative rock\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:5000/api/remove_like/1",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"remove_like",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
 			"name": "Get Song By ID",
 			"request": {
 				"method": "GET",
