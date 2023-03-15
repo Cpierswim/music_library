@@ -111,7 +111,8 @@ class AddLikeResource(Resource):
 class RemoveLikeResource(Resource):
     def put(self, song_id):
         song_from_db = Songs.query.get_or_404(song_id)
-        song_from_db.likes -= 1
+        if song_from_db.likes > 0:
+            song_from_db.likes -= 1
         db.session.commit()
         return song_schema.dump(song_from_db), 200
 
