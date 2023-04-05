@@ -7,6 +7,7 @@ from flask_migrate import Migrate
 from flask_restful import Api, Resource
 from dotenv import load_dotenv
 from os import environ
+from helper import Helper
 
 load_dotenv()
 
@@ -32,6 +33,7 @@ class Songs(db.Model):
     release_date = db.Column(db.Date, nullable=False)
     genre = db.Column(db.String(100), nullable=False)
     likes = db.Column(db.Integer, nullable=True, default=0)
+    running_time = db.Column(db.Integer)
 
 
     def __repr__(self) -> str:
@@ -48,9 +50,10 @@ class SongsSchema(ma.Schema):
     release_date = fields.Date(required=True)
     genre = fields.String(required=True)
     likes = fields.Integer(required=False)
+    running_time = fields.Integer(required=False)
 
     class Meta:
-        fields = ('id', 'title', 'artist', 'album', 'release_date', 'genre', 'likes')
+        fields = ('id', 'title', 'artist', 'album', 'release_date', 'genre', 'likes', 'running_time')
 
     @post_load
     def create_song(self, data, **kwargs):
@@ -63,10 +66,34 @@ songs_schema = SongsSchema(many=True)
 class SongListResoucre(Resource):
     def get(self):
         all_songs = Songs.query.all()
-        return songs_schema.dump(all_songs), 200
+        running_time = 0
+        
+        song_list = []
+        for song in all_songs :
+            release_date_str = song.release_date.strftime("%Y-%m-%d")
+            song_dict = {
+                'title': song.title,
+                'artist': song.artist,
+                'album': song.album,
+                'release_date': release_date_str,
+                'genre': song.genre,
+                'likes': song.likes
+            }
+            if song.running_time is not None:
+                running_time += song.running_time
+            song_list.append(song_dict)
+        
+        custom_response = { 
+            'songs': song_list,
+            'total_running_time': Helper.format_seconds(running_time)
+        }
+
+        return custom_response, 200
 
     def post(self):
         try:
+            temp = request
+            json = temp.get_json()
             add_song = song_schema.load(request.get_json())
             db.session.add(add_song)
             db.session.commit()
@@ -86,12 +113,14 @@ class SongResource(Resource):
             song_from_db.artist = request.json['artist']
         if 'album' in request.json:
             song_from_db.album = request.json['album']
-        if 'relase_date' in request.json:
-            song_from_db.relase_date = request.json['relase_date']
+        if 'release_date' in request.json:
+            song_from_db.release_date = request.json['release_date']
         if 'genre' in request.json:
             song_from_db.genre = request.json['genre']
         if 'likes' in request.json:
             song_from_db.likes = request.json['likes']
+        if 'running_time' in request.json:
+            song_from_db.running_time = request.json['running_time']
         db.session.commit()
         return song_schema.dump(song_from_db), 200
 
@@ -99,8 +128,7 @@ class SongResource(Resource):
         song_from_db = Songs.query.get_or_404(song_id)
         db.session.delete(song_from_db)
         db.session.commit()
-        return '', 204
-    
+        return '', 204    
 class AddLikeResource(Resource):
     def put(self, song_id):
         song_from_db = Songs.query.get_or_404(song_id)
