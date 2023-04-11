@@ -77,7 +77,9 @@ class SongListResoucre(Resource):
                 'album': song.album,
                 'release_date': release_date_str,
                 'genre': song.genre,
-                'likes': song.likes
+                'likes': song.likes,
+                'id': song.id,
+                'running_time': song.running_time
             }
             if song.running_time is not None:
                 running_time += song.running_time
